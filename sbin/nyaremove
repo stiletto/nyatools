@@ -1,0 +1,67 @@
+#!/bin/sh
+INFODIR="/var/log/packages/"
+TMPGLOBLIST=$(mktemp)
+TMPPKGLIST=$(mktemp)
+
+# это мы подчищаем мусор за собой и выходим
+pcleanup() {
+    rm -f "$TMPGLOBLIST" "$TMPPKGLIST" "$TMPGLOBLIST.2"
+}
+
+# это мы видим что нихуя не получилось, печалимся, выходим
+pfail() {
+    echo "failed." "$@" >&2
+    pcleanup
+}
+
+# это мы радуемся что все получилось
+pwin() {
+    echo "done." >&2
+}
+
+# выгрести список файлов из файла инфы пакета
+extract_filelist() {
+    awk '{ if(F) print; } /FILE LIST:/ {F=1}'
+}
+
+while [ "$1" != "" ]
+do
+	CURINFO="${INFODIR}$1"
+	# получаем список файлов пакета в файл $TMPPKGLIST
+	echo "*** $1"
+	echo -n "Getting package information..."
+	if [ -f "$CURINFO" ] 
+	then 
+		extract_filelist < "$CURINFO" | sort > "$TMPPKGLIST" && pwin
+
+		# грепаем файлы из нашего списка в списках других пакетов. находим - заносим в файл $TMPGLOBLIST
+		echo -n "Looking for multi-owned files..."
+		find "$INFODIR" '!' -name "$1" | while read fname; do
+		grep -Fx -f "$TMPPKGLIST" "$fname" >> "$TMPGLOBLIST"
+		done; pwin
+		sort < "$TMPGLOBLIST"|uniq > "$TMPGLOBLIST".2
+		mv "$TMPGLOBLIST".2 "$TMPGLOBLIST"
+
+		# делаем дифф списка файлов пакета и списка файлов которые нельзя удалять (которые в других пакетах есть)
+		echo "Files in this package (files to be removed are marked with '-'):"
+		diff -c "$TMPPKGLIST" "$TMPGLOBLIST" | grep -v '^---' | grep -v '^\*\*\*' | sort
+
+		# ПОДТВЕРЖДЕНИЕ
+		echo -n "Proceed with package removal (y/n)? "
+		read ANS
+		if [ "$ANS" == "y" -o "$ANS" == "yes" ]
+		then
+			# собственно цикл удаления
+			diff -c "$TMPPKGLIST" "$TMPGLOBLIST" | grep '^- ' | sort -r| sed 's1^- 1/1' | while read fname; do
+			echo "<<< $fname"
+			[ -d "$fname" ] && rmdir "$fname" || rm "$fname"
+			done
+		fi
+		pcleanup
+		shift
+	else 
+		pfail "No such package."
+		shift
+	fi
+done
+exit 0

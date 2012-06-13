@@ -1,0 +1,6 @@
+#!/bin/sh
+. /usr/nyarepo/scripts/exports
+rm -rf $TMP/package-${PKGNAM}
+rm -rf $TMP/${PKGNAM}-${VERSION}
+rm -rf $TMP/${PKGNAM}
+rm -f $TMP/$PKGNAM_$VERSION.pkg.tar.xz

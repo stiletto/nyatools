@@ -1,0 +1,28 @@
+#!/bin/sh
+
+export PKGNAM=
+export VERSION=
+export SRCEXT=
+export OPTIONS=defaults	
+export URL=
+export DEPS=""
+	
+	. /usr/nyarepo/scripts/exports
+	
+	begin
+
+# 
+	
+	tar xf $TOP/${PKGNAM}-${VERSION}.${SRCEXT}
+	cd ${PKGNAM}-${VERSION}
+
+	CFLAGS=`echo -n $CBCFLAGS` \
+	CXXFLAGS=`echo -n $CBCXXFLAGS` \
+	./configure $PKGOPTIONS 
+  
+	make -j2 || exit 1
+	make install DESTDIR=$PKG
+
+#
+
+	end 

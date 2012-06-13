@@ -1,0 +1,57 @@
+LC_ALL=C
+TMP=/tmp					
+PKG=$TMP/package-${PKGNAM}	
+TOP=/usr/nyarepo/archives 
+CWD=$(pwd)
+MIRROR=`cat /etc/nyatools/pmirror`
+CBCFLAGS=`cat /etc/nyatools/cflags`
+CBCXXFLAGS=`cat /etc/nyatools/cxxflags`
+PKGOPTIONS=`cat /usr/nyarepo/options/${OPTIONS}`
+PKGDIR=/usr/nyarepo/packages/
+INSTALL=/DOINST
+LOGDIR=/usr/nyarepo/LOGS
+PATCHDIR=/usr/nyarepo/patches
+
+begin()
+{
+	echo "begin!"
+	echo
+	echo "(\")<(^_^)>(\") nya~ nya~ "
+	echo
+	
+	cd $TMP
+	if [  "${URL}" != "" ]; then 
+		wget --no-check-certificate -c ${URL} -P  /usr/nyarepo/archives 
+	fi
+	rm -rf $PKG
+	rm -rf ${PKGNAM}-${VERSION}
+	mkdir -p $PKG
+	mkdir -p $PKG/${INSTALL}
+	version gcc | head -n1 > ${LOGDIR}/${PKGNAM}-${VERSION}-build.log
+	version glibc | head -n1 >> ${LOGDIR}/${PKGNAM}-${VERSION}-build.log
+	version binutils | head -n1 >> ${LOGDIR}/${PKGNAM}-${VERSION}-build.log
+	echo "" >>  ${LOGDIR}/${PKGNAM}-${VERSION}-build.log
+	cat > $PKG/${INSTALL}/postinstall.sh << EOF
+#!/bin/sh
+echo "Running postinstall script"
+ldconfig
+echo "done"
+EOF
+}
+
+end(){
+	echo "end!"
+	mkdir -p $PKG/${INSTALL}	
+	mkdir -p $PKG/var/log/packages/
+	touch $PKG/var/log/packages/${PKGNAM}
+	echo "PACKAGE:${PKGNAM}-${VERSION}" > $PKG/var/log/packages/${PKGNAM}
+	echo "NAME:${PKGNAM}" >> $PKG/var/log/packages/${PKGNAM}
+	echo "VERSION:${VERSION}" >> $PKG/var/log/packages/${PKGNAM}
+	echo "FILE LIST:" >> $PKG/var/log/packages/${PKGNAM}
+	find $PKG/* | sed "s|${PKG}||g" >> $PKG/var/log/packages/${PKGNAM}
+	
+	/etc/nyatools/scripts/strip 
+	/etc/nyatools/scripts/gz_man 
+	/etc/nyatools/scripts/create_pkg ${PKGNAM} ${VERSION}
+	/etc/nyatools/scripts/clean_after 
+}

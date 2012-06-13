@@ -1,0 +1,15 @@
+#!/bin/sh
+. /usr/nyarepo/scripts/exports
+if [ -d $PKG/usr/man ]; then
+   ( cd $PKG/usr/man
+      for manpagedir in $(find . -type d -name "man*") ; do
+         ( cd $manpagedir
+            for eachpage in $( find . -type l -maxdepth 1) ; do
+               ln -s $( readlink $eachpage ).gz $eachpage.gz
+               rm $eachpage
+            done
+            gzip -9 *.?
+         )
+      done
+   )
+fi

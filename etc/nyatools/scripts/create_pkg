@@ -1,0 +1,11 @@
+#!/bin/sh
+
+. /usr/nyarepo/scripts/exports
+rm $TMP/${PKGNAM}_$VERSION.pkg.tar*
+cd $PKG
+nyacreate $TMP ${PKGNAM}_$VERSION
+mv $TMP/${PKGNAM}_$VERSION.pkg.tar.xz /usr/nyarepo/packages/
+
+echo
+echo "Nyashka package /usr/nyarepo/packages/${PKGNAM}_$VERSION.pkg.tar.xz created."
+echo

@@ -1,0 +1,70 @@
+#!/bin/sh
+
+umask 022
+TMP=/tmp
+ROOT=/
+INSTALL=/DOINST
+
+usage() {
+ cat << EOF
+Usage: nyainstall [options] <package_filename>
+
+Nyainstall is used to install a tar.xz package like this:
+   nyainstall package-1.0.0.pkg.tar.xz
+
+options:      -d DESTDIR  - install package into
+                            selected directory
+
+EOF
+}
+
+postinstall() {
+	/bin/sh ${INSTALL}/postinstall.sh
+	rm -rf ${INSTALL}
+}
+
+
+if [ "$1" = "-d" ]; then
+	shift
+	ROOT=$1
+	shift
+fi
+
+case "$1" in
+	-h)
+		usage
+		;;
+	-u)
+		shift
+		if [ "$1" != "" ] 
+		then 
+				PKG=$1
+				PKG_NAME=`echo ${PKG} | cut -d "_" -f1`
+				cp /var/log/packages/$PKG_NAME $TMP/$PKG_NAME-old
+				tar xf $PKG -C $ROOT
+				echo "Package $PKG installed."
+				diff /var/log/packages/$PKG_NAME $TMP/$PKG_NAME-old | grep '>' |tail -n +3 | sed "s|>||g" > $TMP/difflog 
+				for ifile in `cat $TMP/difflog`; do rm -vf $ifile; done
+				echo "Old files are removed."
+				postinstall
+				shift
+		else
+			usage
+		fi
+		;;
+	*)
+		if [ "$1" != "" ] 
+		then 
+			while [ "$1" != "" ]
+			do
+				PKG=$1
+				tar xf $PKG -C $ROOT
+				postinstall
+				echo "Package $PKG installed."
+				shift
+			done
+		else
+			usage
+		fi
+		;;
+esac

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#
+#	nyamake package
+#
+
+case "$1" in
+	-h)
+		usage
+		;;
+	*)
+		if [ "$1" != "" ] 
+		then 
+			while [ "$1" != "" ]
+			do
+				if [ ! -d /usr/nyarepo/"$1" ]; then
+					sh /usr/nyarepo/"$1"
+				else
+					echo "/usr/nyarepo/$1 not exist!"
+				fi	
+				shift
+			done
+		else
+			usage
+		fi
+		;;
+esac

@@ -1,0 +1,35 @@
+#!/bin/sh
+
+case "$1" in
+	-a)
+		for pak in `ls /var/log/packages/ 2> /dev/null`
+		do
+			PAK_NAME=`cat /var/log/packages/${pak} | grep "NAME:" | cut -d ":" -f2`
+			PAK_VERS=`cat /var/log/packages/${pak} | grep "VERSION:" | cut -d ":" -f2`
+			echo "${PAK_NAME} : ${PAK_VERS}"
+		done
+		;;
+	-l)
+		ls /var/log/packages/
+		;;
+	-c)
+		ls /var/log/packages/ | wc -l
+		;;	
+	*)
+		if [ "$1" != "" ] 
+		then 
+			while [ "$1" != "" ]
+			do
+				for pak in `find /var/log/packages/*$1* 2> /dev/null | cut -d "/" -f5`
+					do
+						PAK_NAME=`cat /var/log/packages/${pak} | grep "NAME:" | cut -d ":" -f2`
+						PAK_VERS=`cat /var/log/packages/${pak} | grep "VERSION:" | cut -d ":" -f2`
+						echo "${PAK_NAME} : ${PAK_VERS}"
+					done
+				shift
+			done
+		else
+			echo ">_>"
+		fi
+		;;
+esac

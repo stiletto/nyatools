@@ -1,0 +1,10 @@
+#!/bin/sh
+
+umask 022
+TMP=$1
+PKG=$2
+  find . -type d -exec chmod -v 755 {} \; 
+  find . -type d -exec chown -v root.root {} \;
+  tar -cvf $TMP/$PKG.pkg.tar .
+  xz -z -9 $TMP/$PKG.pkg.tar > /dev/null
+#  bzip2 -z -9 $PKG.pkg.tar > /dev/null

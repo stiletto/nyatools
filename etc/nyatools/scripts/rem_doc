@@ -1,0 +1,16 @@
+#!/bin/sh
+. /usr/nyarepo/scripts/exports
+if [ -d $PKG/usr/info ]; then
+   ( rm -rf $PKG/usr/info
+   )
+fi
+	
+if [ -d $PKG/usr/doc ]; then
+   ( rm -rf $PKG/usr/doc
+   )
+fi
+	
+if [ -d $PKG/usr/share/doc ]; then
+   ( rm -rf $PKG/usr/share/doc
+   )
+fi
