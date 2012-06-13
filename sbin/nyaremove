@@ -36,11 +36,10 @@ do
 
 		# грепаем файлы из нашего списка в списках других пакетов. находим - заносим в файл $TMPGLOBLIST
 		echo -n "Looking for multi-owned files..."
-		find "$INFODIR" '!' -name "$1" | while read fname; do
-		grep -Fx -f "$TMPPKGLIST" "$fname" >> "$TMPGLOBLIST"
-		done; pwin
-		sort < "$TMPGLOBLIST"|uniq > "$TMPGLOBLIST".2
-		mv "$TMPGLOBLIST".2 "$TMPGLOBLIST"
+		find "$INFODIR"  -type f '!' -name "$1" | while read fname; do
+		    cat "$fname"
+		done | sort | uniq | grep -Fx -f "$TMPPKGLIST" >> "$TMPGLOBLIST"
+		pwin
 
 		# делаем дифф списка файлов пакета и списка файлов которые нельзя удалять (которые в других пакетах есть)
 		echo "Files in this package (files to be removed are marked with '-'):"
